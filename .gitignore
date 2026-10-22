@@ -1,0 +1,18 @@
+# 依赖与缓存
+node_modules/
+.npm/
+
+# 参考项目（他人仓库，仅供阅读，不纳入本项目）
+.reference/
+
+# 运行时/工具内部目录
+.pilotdeck/
+docs_raw_*.txt
+*.log
+
+# 抓取管线的原始中间产物（由 tools/ 重新生成；最终 data/*.json 已提交）
+data/raw/
+
+# 操作系统
+.DS_Store
+Thumbs.db
