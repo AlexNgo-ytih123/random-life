@@ -1,0 +1,17 @@
+{
+  "name": "random-life",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "一个人生模拟游戏：被随机生在地球上某处，用那地的真实统计活完一生",
+  "license": "MIT",
+  "scripts": {
+    "test": "node --test \"tests/**/*.test.js\"",
+    "start": "node tools/serve.mjs",
+    "fetch-data": "node tools/fetch-owid.mjs && node tools/fetch-worldbank.mjs && node tools/build-world-data.mjs && node tools/build-map.mjs"
+  },
+  "devDependencies": {
+    "world-atlas": "^2.0.2",
+    "world-countries": "^5.1.0"
+  }
+}
