@@ -8,9 +8,11 @@
   "scripts": {
     "test": "node --test \"tests/**/*.test.js\"",
     "start": "node tools/serve.mjs",
+    "build-map": "node tools/build-map.mjs",
     "fetch-data": "node tools/fetch-owid.mjs && node tools/fetch-worldbank.mjs && node tools/build-world-data.mjs && node tools/build-map.mjs"
   },
   "devDependencies": {
+    "topojson-client": "^3.1.0",
     "world-atlas": "^2.0.2",
     "world-countries": "^5.1.0"
   }

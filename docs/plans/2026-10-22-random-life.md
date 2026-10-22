@@ -43,7 +43,6 @@ M7 收尾        T31 README/许可 → T32 CI + Pages
 - Create: `package.json`
 - Create: `js/engine/rng.js`
 - Create: `tests/rng.test.js`
-- Create: `tests/fixtures/mini-world.json`
 
 **Step 1: 写失败测试** `tests/rng.test.js`
 
@@ -392,7 +391,7 @@ const WB_INDICATORS = [
   { key: 'gdpPcapPpp',     code: 'NY.GDP.PCAP.PP.CD' },
   { key: 'gini',           code: 'SI.POV.GINI' },
   { key: 'urbanRate',      code: 'SP.URB.TOTL.IN.ZS' },
-  { key: 'sexRatioBirth',  code: 'SP.POP.SBRT.IN' },
+  { key: 'sexRatioBirth',  code: 'SP.POP.BRTH.MF' },   // 原 SP.POP.SBRT.IN 已被 WB 废弃，2026-10-22 实测确认
   { key: 'unemployment',   code: 'SL.UEM.TOTL.ZS' },
   { key: 'oopHealth',      code: 'SH.XPD.OOPC.CH.ZS' },
   { key: 'doctors',        code: 'SH.MED.PHYS.ZS' },
