@@ -728,7 +728,7 @@ test('高寿命国的平均死亡年龄显著高于低寿命国', () => {
   assert.ok(mean(buildMortality(HIGH)) - mean(buildMortality(LOW)) > 20);
 });
 
-test('死亡年龄分布右偏：众数早于均值', () => {
+test('死亡年龄分布左偏：长尾在幼年侧，中位年龄不早于均值', () => {
   const m = buildMortality(HIGH);
   const r = makeRng(808);
   const ages = [];
@@ -736,7 +736,25 @@ test('死亡年龄分布右偏：众数早于均值', () => {
   const mean = ages.reduce((a, b) => a + b, 0) / ages.length;
   const sorted = [...ages].sort((a, b) => a - b);
   const median = sorted[sorted.length >> 1];
-  assert.ok(median < mean, `median=${median} mean=${mean}`);
+  // Gompertz 死亡年龄分布是左偏的：长尾在幼年侧，中位年龄 ≥ 均值。
+  // 现实亦然（e0=80 的国家，中位死亡年龄约 83 > 均值 80）。
+  assert.ok(median >= mean - 0.05, `median=${median} mean=${mean}`);
+  assert.ok(ages.some((a) => a < 5), '缺少幼年早逝样本');
+});
+
+test('生命表在中年阶段的存活比例落在真实区间', () => {
+  const t = lifeTable(buildMortality(HIGH));
+  const l = (age) => t[age].l;
+  // 日本/瑞士级别：l(40)≈0.975，l(60)≈0.86，l(70)≈0.79
+  assert.ok(l(40) > 0.95 && l(40) < 0.995, `l(40)=${l(40)}`);
+  assert.ok(l(60) > 0.80 && l(60) < 0.93, `l(60)=${l(60)}`);
+  assert.ok(l(70) > 0.70 && l(70) < 0.88, `l(70)=${l(70)}`);
+});
+
+test('低寿命国家的存活曲线下降更快', () => {
+  const hi = lifeTable(buildMortality(HIGH));
+  const lo = lifeTable(buildMortality(LOW));
+  assert.ok(hi[80].l > lo[80].l, `l80 高=${hi[80].l} 低=${lo[80].l}`);
 });
 
 test('男性预期寿命更低 → 男性平均死亡年龄更低', () => {
@@ -760,8 +778,11 @@ test('男性预期寿命更低 → 男性平均死亡年龄更低', () => {
 
 设输入 `e0`（岁）、`q0 = infantMort/1000`、`q5 = under5Mort/1000`。
 
-1. **形状参数**：`gamma = clamp(1.15 - (e0 - 45) * 0.0075, 0.85, 1.15)`
-   （寿命越短 → 衰老越陡 → gamma 越大）
+1. **形状参数**：`gamma = clamp(0.075 + (78 - e0) * 0.0009, 0.075, 0.115)`
+   单位是**每年**。真实人群的 Gompertz 斜率约 0.075–0.115/年
+   （美国 2019：μ(40)≈0.0015、μ(80)≈0.02，ln 比值/40 年 ≈ 0.065–0.08）。
+   寿命越短 → 衰老越陡 → gamma 越大。
+   ⚠️ 不要写成 0.85–1.15 那一版：那个量级大 10 倍，会让所有人都死在 85 岁前后。
 2. **儿童段（固定，不由 e0 决定）**
    - `mu(0) = -ln(1 - q0)`
    - `q1_4 = max(0, (q5 - q0)) / 4`，`mu(1..4) = -ln(1 - q1_4)`
@@ -774,7 +795,8 @@ test('男性预期寿命更低 → 男性平均死亡年龄更低', () => {
      `l(0)=1; l(x+1) = l(x) * exp(-mu(x))`
      `e0Model = Σ_{x=0}^{119} l(x)`
    - `e0Model` 关于 `beta` **单调递减** → 可二分
-   - 二分区间 `beta ∈ [1e-12, 1e-2]`，迭代 200 次或区间宽度 < 1e-15
+   - **在 log 空间二分**：`logBeta ∈ [-30, 0]`（即 beta ∈ [9.4e-14, 1]），
+     迭代 200 次或区间宽度 < 1e-12。实际解约在 `beta ∈ [5e-5, 5e-4]`（e0 从 45 到 90 的映射）。
    - 若 200 次后仍未收敛到 0.01 岁以内，取误差最小的端点并置 `converged = false`（不静默失败）
 5. **生命表导出** `lifeTable(m)`：返回 `[{age, mu, q, l, e}]`
    - `q(x) = 1 - exp(-mu(x))`，`e(x) = (Σ_{y=x}^{119} l(y)) / l(x)`
