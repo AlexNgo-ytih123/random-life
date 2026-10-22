@@ -2,18 +2,21 @@
 /**
  * World Bank Open Data 抓取器
  *
- * 抓取游戏需要的 19 个指标，按指标落盘到 data/raw/worldbank/<key>.json：
+ * 抓取游戏需要的 20 个指标，按指标落盘到 data/raw/worldbank/<key>.json：
  *   { "CHN": { "2022": 78.0, "2021": 77.9 }, ... }        ← iso3 -> { 年份: 数值 }
  * 同时写一份 <key>.meta.json，记录指标代码、请求 URL、检索时间、字节数与非空值数量。
  *
  * 注意：
  * - 纯函数 parseWorldBank(payload) 单独导出，便于测试；导入本模块不会触发任何网络请求。
- * - 这里自带一个极简 HTTP helper（重试 + 退避 + 超时），不依赖 tools/lib/http.mjs，
- *   避免和并行开发该文件的其它任务产生耦合。
+ * - HTTP 抓取统一走 tools/lib/http.mjs（重试 + 指数退避 + 超时，错误信息必带 URL）。
+ * - 落盘目录基于仓库根目录（tools/lib/paths.mjs），与运行时的 cwd 无关。
  * - 标准库 + 全局 fetch，无第三方依赖。
  */
 import fs from 'node:fs';
 import path from 'node:path';
+
+import { fetchText, fetchJson } from './lib/http.mjs';
+import { rawDir, isDirectRun } from './lib/paths.mjs';
 
 /* ------------------------------------------------------------------ *
  * 常量
@@ -50,14 +53,14 @@ const DATE_RANGE = '1990:2023';
 
 /** 单个指标的请求 URL。 */
 export function indicatorUrl(code) {
-  return `${API_BASE}/country/all/indicator/${code}?format=json&per_page=20000&date=${DATE_RANGE}`;
+  return `${API_BASE}/country/all/indicator/${encodeURIComponent(code)}?format=json&per_page=20000&date=${DATE_RANGE}`;
 }
 
 /** 国家清单 URL：region.id === 'NA' 即为聚合行（World / Africa / Euro area ...）。 */
 const COUNTRY_LIST_URL = `${API_BASE}/country?format=json&per_page=400`;
 
-/** 落盘目录（相对仓库根目录，脚本从仓库根运行）。 */
-const OUT_DIR = path.join('data', 'raw', 'worldbank');
+/** 落盘目录（相对仓库根目录，与 cwd 无关）。 */
+const OUT_DIR = rawDir('worldbank');
 
 /* ------------------------------------------------------------------ *
  * 纯函数：解析 API 响应
@@ -155,51 +158,26 @@ export function apiError(payload) {
 }
 
 /* ------------------------------------------------------------------ *
- * 本地 HTTP helper（重试 + 指数退避 + 超时）
+ * 抓取辅助
  * ------------------------------------------------------------------ */
 
-const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-
 /**
- * GET 一个 URL 并返回文本。
- * 网络错误与 5xx / 429 会指数退避重试；其它 4xx 直接抛错（重试也没用）。
+ * 取 World Bank 国家清单，返回真实国家的 ISO3 集合（剔除聚合行）。
+ *
+ * 失败时抛错：API 出错时仍返回 HTTP 200，body 里是 { message: [...] }，
+ * 必须显式识别；否则 payload[1] 是 undefined，会得到一个「非空但全是假」的
+ * 过滤集合，把所有指标都过滤成空结果。
+ *
+ * @returns {Promise<Set<string>>}
  */
-async function httpGetText(url, { retries = 3, timeoutMs = 60000, backoffMs = 1000 } = {}) {
-  let lastError = null;
+async function fetchCountryIso3Set() {
+  const payload = await fetchJson(COUNTRY_LIST_URL, { retries: 2, timeoutMs: 30_000 });
 
-  for (let attempt = 0; attempt <= retries; attempt++) {
-    let res;
-    try {
-      res = await fetch(url, {
-        signal: AbortSignal.timeout(timeoutMs),
-        headers: { accept: 'application/json' },
-      });
-    } catch (err) {
-      // 网络层错误 / 超时：可重试
-      lastError = err;
-    }
-
-    if (res) {
-      if (res.ok) return await res.text();
-      const err = new Error(`HTTP ${res.status} ${res.statusText} — ${url}`);
-      if (res.status < 500 && res.status !== 429) throw err; // 不可重试
-      lastError = err;
-    }
-
-    if (attempt < retries) {
-      const wait = backoffMs * 2 ** attempt;
-      console.error(`    重试 ${attempt + 1}/${retries}（${lastError?.message ?? '未知错误'}），${wait}ms 后再试`);
-      await sleep(wait);
-    }
+  const apiErr = apiError(payload);
+  if (apiErr) {
+    throw new Error(`国家清单接口返回错误：${apiErr}`);
   }
 
-  throw lastError ?? new Error(`请求失败：${url}`);
-}
-
-/** 取 World Bank 国家清单，返回真实国家的 ISO3 集合（剔除聚合行）。 */
-async function fetchCountryIso3Set() {
-  const text = await httpGetText(COUNTRY_LIST_URL, { retries: 2, timeoutMs: 30000 });
-  const payload = JSON.parse(text);
   const rows = Array.isArray(payload?.[1]) ? payload[1] : [];
   const set = new Set();
   for (const c of rows) {
@@ -212,72 +190,116 @@ async function fetchCountryIso3Set() {
   return set;
 }
 
+/**
+ * 抓取一个指标的序列（主代码失败时自动回退到备用代码）。
+ *
+ * **失败即失败**：解析不出任何数据时返回 series = null（而不是空对象 {}），
+ * 调用方据此跳过落盘并计入失败数。空对象是「真值」，一旦漏掉这一步，
+ * 一个空响应就会被当成有效数据写进 data/raw/worldbank/<key>.json，
+ * 还会在 meta 里留下 "code": null 与一个 .../indicator/null?... 的假 URL。
+ *
+ * @param {{key:string, code:string, fallback?:string}} indicator
+ * @param {(url: string) => Promise<string>} getText 注入的取文本函数（便于测试）
+ * @param {(code: string) => boolean} isCountry 是否真实国家的判定
+ * @returns {Promise<{series: Record<string, Record<number, number>>|null,
+ *                    code: string|null, text: string|null, payload: unknown,
+ *                    error: Error|null}>}
+ */
+export async function resolveIndicator(indicator, getText, isCountry = () => true) {
+  const { key, code, fallback } = indicator;
+  const candidates = [code, ...(fallback ? [fallback] : [])];
+
+  let lastError = null;
+
+  for (const candidate of candidates) {
+    const url = indicatorUrl(candidate);
+    let text = null;
+    let payload = null;
+
+    try {
+      text = await getText(url);
+      payload = JSON.parse(text);
+    } catch (err) {
+      lastError = err;
+      continue; // 网络/解析失败 → 试下一个候选代码
+    }
+
+    const apiErr = apiError(payload);
+    if (apiErr) {
+      lastError = new Error(`API 报错（${apiErr}）`);
+      console.error(`    ${key}: 代码 ${candidate} 被 API 拒绝（${apiErr}）`);
+      continue; // 试下一个候选代码
+    }
+
+    // 分页保护：pages > 1 说明结果被 per_page 截断了，必须报错而不是落盘残缺数据
+    const pages = Number(payload?.[0]?.pages ?? 0);
+    if (Number.isFinite(pages) && pages > 1) {
+      lastError = new Error(`响应被分页截断（pages=${pages}），per_page 不够`);
+      console.error(`    ${key}: 代码 ${candidate} 返回 ${pages} 页数据，结果可能不完整`);
+      continue; // 试下一个候选代码
+    }
+
+    const series = parseWorldBank(payload, { isCountry });
+    if (Object.keys(series).length === 0) {
+      // 关键：空结果必须记为失败，且 series 保持 null
+      lastError = new Error('解析结果为空（响应结构异常）');
+      continue;
+    }
+
+    return { series, code: candidate, text, payload, error: null };
+  }
+
+  return { series: null, code: null, text: null, payload: null, error: lastError ?? new Error('未知错误') };
+}
+
 /* ------------------------------------------------------------------ *
  * CLI
  * ------------------------------------------------------------------ */
 
 /** 抓全部指标并落盘。返回失败数量。 */
 async function fetchAll() {
-  const outDir = path.resolve(process.cwd(), OUT_DIR);
+  const outDir = OUT_DIR;
   fs.mkdirSync(outDir, { recursive: true });
 
   // 真实国家清单：用来剔除 AFE/ARB/WLD/EUU 这类"有 3 位代码但其实是聚合"的行。
   let iso3Set = null;
   try {
-    iso3Set = await fetchCountryIso3Set();
+    const fetched = await fetchCountryIso3Set();
+    if (fetched.size === 0) {
+      // 空集合会让 isCountry 拒绝所有国家 → 所有指标都解析成空 → 静默产出空数据
+      throw new Error('国家清单为空');
+    }
+    iso3Set = fetched;
     console.error(`国家清单：${iso3Set.size} 个真实国家（已排除聚合行）`);
   } catch (err) {
+    iso3Set = null;
     console.error(`警告：国家清单获取失败（${err.message}），退化为"3 位字母代码"过滤`);
   }
   const isCountry = iso3Set ? (code) => iso3Set.has(code) : () => true;
   const filter = iso3Set ? 'world-bank-country-list' : 'iso3-3-letter';
 
+  const getText = (url) => fetchText(url, { retries: 3, timeoutMs: 60_000 });
+
   let failures = 0;
-  for (const { key, code, fallback } of WB_INDICATORS) {
-    // 主代码；若 API 报错则依次尝试备用代码
-    const candidates = [code, ...(fallback ? [fallback] : [])];
-    let series = null;
-    let text = null;
-    let payload = null;
-    let usedCode = null;
-    let lastError = null;
-
-    for (const candidate of candidates) {
-      const url = indicatorUrl(candidate);
-      try {
-        text = await httpGetText(url);
-        payload = JSON.parse(text);
-      } catch (err) {
-        lastError = err;
-        continue; // 网络/解析失败 → 试下一个候选代码
-      }
-
-      const apiErr = apiError(payload);
-      if (apiErr) {
-        lastError = new Error(`API 报错（${apiErr}）`);
-        console.error(`    ${key}: 代码 ${candidate} 被 API 拒绝（${apiErr}）`);
-        continue; // 试下一个候选代码
-      }
-
-      series = parseWorldBank(payload, { isCountry });
-      if (Object.keys(series).length === 0) {
-        lastError = new Error('解析结果为空（响应结构异常）');
-        continue;
-      }
-
-      usedCode = candidate;
-      break;
-    }
+  for (const indicator of WB_INDICATORS) {
+    const { key, code } = indicator;
+    const { series, code: usedCode, text, payload, error } = await resolveIndicator(
+      indicator,
+      getText,
+      isCountry,
+    );
 
     try {
-      if (!series) throw lastError ?? new Error('未知错误');
+      // series 为 null 表示「没拿到数据」——绝不落盘空文件
+      if (!series) throw error ?? new Error('未知错误');
 
       const url = indicatorUrl(usedCode);
       const values = countValues(series);
       const countries = Object.keys(series).length;
 
       const dataPath = path.join(outDir, `${key}.json`);
-      const dataText = JSON.stringify(series);
+      // 数据文件与 meta 文件统一以换行结尾
+      const dataText = `${JSON.stringify(series)}\n`;
       fs.writeFileSync(dataPath, dataText, 'utf8');
 
       const firstRow = Array.isArray(payload?.[1]) ? payload[1][0] : null;
@@ -309,13 +331,12 @@ async function fetchAll() {
     }
   }
 
-  console.log(`\n完成：成功 ${WB_INDICATORS.length - failures} / ${WB_INDICATORS.length}，输出目录 ${OUT_DIR}`);
+  console.log(`\n完成：成功 ${WB_INDICATORS.length - failures} / ${WB_INDICATORS.length}，输出目录 ${outDir}`);
   return failures;
 }
 
 // 只有直接运行本文件时才抓数据；被 import 时不做任何 IO。
-const isMain = Boolean(process.argv[1]) && path.basename(process.argv[1]) === 'fetch-worldbank.mjs';
-if (isMain) {
+if (isDirectRun(import.meta.url)) {
   const failures = await fetchAll();
   if (failures > 0) process.exitCode = 1;
 }

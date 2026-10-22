@@ -8,9 +8,6 @@ function boot() {
   }
 }
 
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', boot, { once: true });
-} else {
-  // DOM 已解析完毕（例如模块被延迟加载）
-  boot();
-}
+// type="module" 的脚本是 defer 的：一定在文档解析完成之后才执行，
+// 此时 DOM 已经可用，不需要再监听 DOMContentLoaded。
+boot();

@@ -6,12 +6,16 @@
  * - fetchText(url, opts)  带指数退避重试（1s/2s/4s）与超时的文本抓取；错误信息始终包含 URL
  * - fetchJson(url, opts)  fetchText + JSON.parse
  * - parseCsv(text)        自己实现的 RFC4180 CSV 解析器，返回「对象数组」（首行表头不计入）
+ *                          行对象为 null 原型（Object.create(null)），__proto__ 等列名安全
  * - parseCsvTable(text)   同上，但额外返回表头数组
  * - toCsv(rows, columns)  把对象数组序列化回 CSV（过滤后落盘用）
  */
 
 /** 默认 UA：礼貌抓取，便于对方识别与限流 */
-const DEFAULT_USER_AGENT = 'random-life-build/0.1 (+https://ourworldindata.org)';
+const USER_AGENT = 'random-life-build/0.1 (+https://ourworldindata.org)';
+
+/** 指数退避的基数：第 n 次重试等待 1s / 2s / 4s */
+const BACKOFF_BASE_MS = 1_000;
 
 /** 带上下文的 HTTP 错误（url/status/body 全部保留，便于排查） */
 export class HttpError extends Error {
@@ -32,16 +36,14 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
  * - 不重试：其余 4xx（404 立即失败，错误信息带 URL）
  *
  * @param {string} url
- * @param {{retries?:number, timeoutMs?:number, backoffMs?:number, headers?:object, userAgent?:string}} options
+ * @param {{retries?:number, timeoutMs?:number, headers?:object}} options
  * @returns {Promise<string>}
  */
 export async function fetchText(url, options = {}) {
   const {
     retries = 3,
     timeoutMs = 30_000,
-    backoffMs = 1_000,
     headers = {},
-    userAgent = DEFAULT_USER_AGENT,
   } = options;
 
   let lastError = null;
@@ -55,7 +57,7 @@ export async function fetchText(url, options = {}) {
         redirect: 'follow',
         signal: AbortSignal.timeout(timeoutMs),
         headers: {
-          'user-agent': userAgent,
+          'user-agent': USER_AGENT,
           accept: 'text/csv,application/json;q=0.9,text/plain;q=0.8,*/*;q=0.5',
           ...headers,
         },
@@ -71,23 +73,18 @@ export async function fetchText(url, options = {}) {
         { url, status: res.status, body },
       );
     } catch (err) {
-      if (err instanceof HttpError) {
-        lastError = err;
-        retryable = (err.status ?? 0) >= 500;
-      } else {
-        // 网络错误 / 超时 —— 可重试
-        lastError = new HttpError(`GET ${url} failed: ${err?.message ?? String(err)}`, {
-          url,
-          cause: err,
-        });
-        retryable = true;
-      }
+      // 这里只可能是网络错误 / 超时（try 块内不抛 HttpError）—— 一律可重试
+      lastError = new HttpError(`GET ${url} failed: ${err?.message ?? String(err)}`, {
+        url,
+        cause: err,
+      });
+      retryable = true;
     }
 
     if (!retryable) break;
     if (attempt < retries) {
       // 指数退避：1s / 2s / 4s
-      await sleep(backoffMs * 2 ** attempt);
+      await sleep(BACKOFF_BASE_MS * 2 ** attempt);
     }
   }
 
@@ -115,6 +112,12 @@ export async function fetchJson(url, options = {}) {
 /**
  * RFC4180 CSV 解析器：支持引号包裹、"" 转义引号、字段内换行、CRLF、空行跳过。
  * 返回 { columns, rows }；rows 为对象数组，首行（表头）不计入。
+ *
+ * 表头规范化：
+ * - 空表头 → 用列号占位（`#3`），避免多个空表头互相覆盖。
+ * - 重复表头 → 追加列号后缀（`name#3`），保留全部列的数据。
+ * - 行对象使用 null 原型（Object.create(null)）：列名恰好是 `__proto__` /
+ *   `constructor` 时不会被静默丢弃，也不会污染 Object.prototype。
  *
  * @param {string} text
  * @returns {{columns: string[], rows: object[]}}
@@ -185,11 +188,23 @@ export function parseCsvTable(text) {
   const table = records.filter((r) => !(r.length === 1 && r[0].trim() === ''));
   if (table.length === 0) return { columns: [], rows: [] };
 
-  const columns = table[0].map((name) => name.trim());
+  // 表头：去空白 → 空名/重名消歧；headerIndex 用 null 原型，__proto__ 之类的列名安全
+  const headerIndex = Object.create(null);
+  const columns = [];
+  const rawColumns = table[0].map((name) => name.trim());
+  for (let c = 0; c < rawColumns.length; c += 1) {
+    let name = rawColumns[c];
+    if (name === '') name = `#${c}`;
+    if (name in headerIndex) name = `${name}#${c}`;
+    headerIndex[name] = c;
+    columns.push(name);
+  }
+
   const rows = table.slice(1).map((cells) => {
-    const obj = {};
-    for (let c = 0; c < columns.length; c += 1) {
-      obj[columns[c]] = c < cells.length ? cells[c] : '';
+    const obj = Object.create(null);
+    for (const name of columns) {
+      const c = headerIndex[name];
+      obj[name] = c < cells.length ? cells[c] : '';
     }
     return obj;
   });

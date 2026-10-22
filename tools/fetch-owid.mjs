@@ -13,11 +13,10 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { fetchText, parseCsvTable, toCsv } from './lib/http.mjs';
+import { rawDir, isDirectRun } from './lib/paths.mjs';
 
-const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const OUT_DIR = path.join(ROOT, 'data', 'raw', 'owid');
+const OUT_DIR = rawDir('owid');
 const GRAPHER_BASE = 'https://ourworldindata.org/grapher';
 
 /** ISO3 国家代码：3 位大写字母（World / Africa 这类聚合行的 Code 为空） */
@@ -55,7 +54,7 @@ export function filterIso3Rows(rows) {
  * @param {object[]} rows
  * @param {string[]} columns 表头
  * @returns {{valueColumn:string, projectedColumn:string, actualThroughYear:number|null,
- *            projectedFromYear:number|null, splitYear:number|null}|null}
+ *            projectedFromYear:number|null}|null}
  */
 export function detectProjectionSplit(rows, columns) {
   if (!Array.isArray(columns) || columns.length < 4) return null;
@@ -86,8 +85,6 @@ export function detectProjectionSplit(rows, columns) {
     projectedColumn,
     actualThroughYear,
     projectedFromYear,
-    // 分界年 = 最后一年「实际值」；之后都是投影值
-    splitYear: actualThroughYear,
   };
 }
 
@@ -157,15 +154,38 @@ function parseArgs(argv) {
   const options = { only: null, cache: false };
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i];
-    if (arg === '--cache') options.cache = true;
-    else if (arg === '--only') options.only = argv[i + 1] ?? null;
-    else if (arg.startsWith('--only=')) options.only = arg.slice('--only='.length);
+    if (arg === '--cache') {
+      options.cache = true;
+    } else if (arg === '--only') {
+      const value = argv[i + 1];
+      if (value === undefined || value.startsWith('--')) {
+        // 缺参数时必须报错：静默当成「抓全部」会浪费大量网络请求
+        throw new Error('--only 需要一个参数（序列 key）');
+      }
+      options.only = value;
+      i += 1;
+    } else if (arg.startsWith('--only=')) {
+      const value = arg.slice('--only='.length);
+      if (value === '') throw new Error('--only 需要一个参数（序列 key）');
+      options.only = value;
+    } else {
+      throw new Error(`未知参数：${arg}`);
+    }
   }
   return options;
 }
 
 async function main() {
-  const options = parseArgs(process.argv.slice(2));
+  let options;
+  try {
+    options = parseArgs(process.argv.slice(2));
+  } catch (err) {
+    console.error(`参数错误：${err.message}`);
+    console.error(`用法：node tools/fetch-owid.mjs [--only <key>] [--cache]`);
+    process.exitCode = 1;
+    return;
+  }
+
   const series = options.only
     ? OWID_SERIES.filter((s) => s.key === options.only)
     : OWID_SERIES;
@@ -182,7 +202,7 @@ async function main() {
   for (const item of series) {
     try {
       const meta = await fetchSeries(item, { cache: options.cache });
-      const split = meta.projection?.splitYear;
+      const split = meta.projection?.actualThroughYear;
       const splitNote = split ? ` split=${split}` : '';
       console.log(
         `OK   ${item.key.padEnd(11)} ${String(meta.bytes).padStart(9)} B  ` +
@@ -202,6 +222,6 @@ async function main() {
 }
 
 // 仅在直接运行时作为 CLI 执行（被 import 时不触发网络请求）
-if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+if (isDirectRun(import.meta.url)) {
   await main();
 }
