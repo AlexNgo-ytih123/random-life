@@ -1,0 +1,113 @@
+.toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: center; margin: 18px 0; }
+.settings input { width: 140px; }
+.settings select, .settings input { padding: 8px; border: 1px solid #ccc; border-radius: 6px; color: var(--text); background: var(--card); }
+.source-note { color: #666; font-size: .85rem; line-height: 1.6; }
+.edition-panel { margin-top: 18px; }
+.feature-list { padding-left: 20px; line-height: 1.8; }
+.story-entry { padding: 9px 0; border-bottom: 1px solid #ddd; }
+.story-entry small { display: block; color: #666; margin-top: 4px; }
+.edition-modal { position: fixed; inset: 0; background: rgba(0,0,0,.7); display: flex; justify-content: center; align-items: center; z-index: 100; padding: 20px; }
+.edition-modal .panel { width: 100%; max-width: 650px; max-height: 90vh; overflow-y: auto; }
+.edition-modal button { line-height: 1.5; }
+.edition-modal .options-grid { grid-template-columns: 1fr; }
+[hidden] { display: none !important; }
+.btn:disabled, .focus-btn:disabled, .opt-btn:disabled { opacity: .5; cursor: default; }
+#library-content { max-height: 75vh; overflow-y: auto; }
+#ceremony-content { text-align: left; }
+#ceremony-content > .panel { max-width: 760px; margin: 18px auto; }
+.edition-field { display: grid; grid-template-columns: minmax(100px, 1fr) 2fr; gap: .5rem; margin: 7px 0; }
+.edition-field dd { margin: 0; overflow-wrap: anywhere; }
+.edition-stat .stat-bar { height: 8px; background: #ddd; overflow: hidden; border-radius: 4px; }
+.edition-stat .stat-bar > span { display: block; height: 100%; background: var(--accent); }
+.edition-log { padding-left: 1.2rem; }
+.edition-log li { margin: 12px 0; }
+.log-age { opacity: .65; }
+.edition-section { margin: 14px 0; }
+.achievement { padding: 10px 0; }
+.locked { opacity: .6; }
+@media (max-width: 720px) {
+  .game-layout { grid-template-columns: 1fr; }
+  .focus-panel { grid-template-columns: repeat(2, 1fr); }
+  #app { padding: 14px; }
+}
+
+/* Compact dossier layout: preserve every field and control without nested cards. */
+:root{--bg:#eef2ef;--text:#223b35;--accent:#237968;--card:#fff;--line:#dce5df;--muted:#64756d}
+*{box-sizing:border-box}
+body{display:block;min-height:100vh;align-items:initial;font-size:14px;line-height:1.55;background:var(--bg)}
+#app{max-width:1320px;margin:0 auto;padding:24px}
+h1,h2,h3,p,dl,ul,ol{margin-top:0}
+h2{font-size:1.2rem}h3{font-size:1rem}
+button,input,select{font:inherit}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #79b9a9;outline-offset:3px}
+.panel{padding:16px;border:1px solid var(--line);border-radius:12px;box-shadow:0 2px 7px #24443205}
+.btn{padding:10px 22px;font-size:1rem;border-radius:8px;font-weight:650}
+.focus-btn,.opt-btn{padding:8px 12px;border-color:var(--line);font-size:.875rem}
+.focus-btn:hover:not(:disabled){border-color:var(--accent);background:#eff6f2}
+.toolbar{gap:8px;margin:10px 0}.source-note{font-size:.76rem;line-height:1.6;color:var(--muted);margin:8px 0 0}
+.hero{ text-align:left }
+.hero>h1{font-size:2.5rem;line-height:1.15;margin:0 0 10px;letter-spacing:-.04em}
+.hero>h2{margin:0 0 14px}
+#screen-landing .hero{display:grid;grid-template-columns:minmax(300px, .85fr) minmax(400px,1.4fr);gap:14px 32px;align-items:center;padding:26px;background:var(--card);border:1px solid var(--line);border-radius:16px}
+#screen-landing .hero>h1{grid-column:1;grid-row:1;align-self:end;margin-bottom:0}
+#screen-landing .hero>p:first-of-type{grid-column:1;grid-row:2;margin:0;color:var(--muted)}
+#birth-counter{grid-column:1;grid-row:3;margin:0;font-size:.9rem;color:var(--accent)}
+.year-selector{grid-column:1;grid-row:4;width:100%;max-width:none;margin:0;padding-top:12px;border-top:1px solid var(--line)}
+.year-label{font-size:1rem;margin-bottom:8px}
+.settings{grid-column:1;grid-row:5;justify-content:flex-start;margin:0;gap:8px}
+.settings label{display:flex;align-items:center;gap:6px}.settings input{width:96px}.settings select,.settings input{padding:6px;border-color:var(--line)}
+#world-map{grid-column:2;grid-row:1 / 8;width:100%;height:auto;aspect-ratio:1.65;max-width:none;margin:0;border:1px solid var(--line);background:#e7f0ed}
+#screen-landing .hero>br{display:none}
+#btn-start{grid-column:1;grid-row:6;width:100%;margin-top:6px}
+#screen-landing .hero>.toolbar:not(.settings){grid-column:1;grid-row:7;justify-content:flex-start;margin:0}
+#load-status{grid-column:1 / -1;margin:0}#load-status:empty{display:none}
+#source-note{grid-column:1 / -1;border-top:1px solid var(--line);padding-top:12px;margin:0}
+#ceremony-content{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+#ceremony-content>.panel{max-width:none;width:auto;margin:0}
+#ceremony-content .birth-certificate{grid-column:1;grid-row:1 / 3;background:#e6f0e9;border-color:#cedfd2;padding:20px}
+.birth-certificate>h2{font-size:.75rem;letter-spacing:.12em;color:var(--accent);margin-bottom:12px}
+.birth-certificate>h3{font-size:2rem;line-height:1.3;margin-bottom:22px}
+#ceremony-content>.section-family{grid-column:2;grid-row:1}
+#ceremony-content>.section-culture{grid-column:2;grid-row:2}
+#ceremony-content>.section-countryStats{grid-column:3;grid-row:1 / 3}
+#ceremony-content>.section-peers{grid-column:1 / -1}
+#ceremony-content>.source-note{grid-column:1 / -1;margin:0}
+.edition-section h3{margin:0 0 10px;padding-bottom:8px;border-bottom:1px solid var(--line)}
+.edition-field{grid-template-columns:minmax(85px,.95fr) minmax(0,1.5fr);gap:10px;margin:6px 0;line-height:1.6}
+.edition-field dt{color:var(--muted)}.edition-field dd{font-weight:500}
+dl{margin-bottom:0}.feature-list{margin:0;padding-left:18px;line-height:1.7}.feature-list:empty{display:none}
+#ceremony-content>.section-peers .feature-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 30px}
+.birth-actions{display:flex;gap:8px;align-items:center;position:sticky;bottom:0;z-index:5;padding:12px 0;background:var(--bg);margin-top:4px;border-top:1px solid var(--line)}
+.game-layout{grid-template-columns:282px minmax(0,1fr);gap:14px;align-items:start}
+.game-layout>aside{padding:16px}
+#player-name{font-size:1.2rem;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+#stats-panel>.panel,#player-info>.panel,#story-panel>.panel,#peers-panel>.panel{padding:0;border:0;border-radius:0;box-shadow:none;background:transparent;margin:0}
+.player-info>h2{display:none}
+.edition-stat{display:grid;grid-template-columns:36px 1fr 26px;gap:9px;align-items:center;margin:9px 0}
+.edition-stat>.stat-bar{margin:0;height:6px;background:#e6ede8}.edition-stat strong{text-align:right;font-size:.82rem}
+.edition-stats>dl{padding-top:8px;margin-top:10px;border-top:1px solid var(--line)}
+.game-layout aside hr{border:0;border-top:1px solid var(--line);margin:12px 0}
+.player-info .edition-field{font-size:.82rem;grid-template-columns:76px minmax(0,1fr);margin:7px 0}
+.game-layout>main{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(220px,1fr);gap:12px;align-items:start}
+#scene-canvas{grid-column:1 / -1;aspect-ratio:192/36;max-height:186px;border:1px solid var(--line);background:#172b27;object-fit:cover;border-radius:12px}
+#game-controls{grid-column:1 / -1;margin:0!important;padding:12px 14px;background:var(--card);border:1px solid var(--line);border-radius:12px;display:grid;grid-template-columns:1fr auto;gap:10px 14px;align-items:center}
+.focus-panel{display:flex;flex-wrap:wrap;gap:6px;margin:0}.focus-panel .focus-btn{flex:1;padding:8px;white-space:nowrap}
+.focus-btn.active{box-shadow:none;border-color:var(--accent);color:var(--accent);background:#e8f2ed}
+#btn-next-year{margin:0!important;min-width:120px;align-self:stretch}
+#game-controls>.toolbar{grid-column:1 / -1;justify-content:flex-start;margin:0;padding-top:10px;border-top:1px solid var(--line)}
+#save-status{grid-column:1 / -1;margin:0;text-align:left;font-size:.78rem;color:var(--muted)}#save-status:empty{display:none}
+.edition-panel{margin:0;min-width:0}
+#story-panel{grid-column:1}#peers-panel{grid-column:2;background:#f5f8f5}
+.edition-log{list-style:none;padding:0;margin:0}.edition-log li{margin:0;padding:10px 0;border-bottom:1px solid var(--line);line-height:1.7}.edition-log li:last-child{border:0;padding-bottom:0}
+.log-age{display:inline-block;font-size:.75rem;font-weight:650;color:var(--accent);background:#e8f1eb;border-radius:4px;padding:0 4px;margin-right:4px;opacity:1}
+#peers-panel li{margin-bottom:12px;font-size:.82rem}#peers-panel li:last-child{margin-bottom:0}
+#screen-ending #death-record{max-width:none!important;display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:14px;padding:0;border:0;background:none;box-shadow:none}
+#death-record>.edition-ending{grid-row:span 2}#death-record>.edition-section{margin:0}
+#library-content{max-height:none}.edition-shop-item{padding:12px 0;border-bottom:1px solid var(--line)}
+#screen-library>.toolbar{justify-content:flex-start}
+.edition-modal{backdrop-filter:blur(4px)}.edition-modal .panel{border-radius:16px;padding:24px}.edition-modal h2{margin-bottom:12px}.edition-modal .toolbar{justify-content:flex-start;margin-bottom:0}
+@media(min-width:1500px){#app{padding-top:36px}}
+@media(max-width:1000px){#app{padding:16px}.game-layout{grid-template-columns:250px minmax(0,1fr)}.game-layout>main{grid-template-columns:1fr}#story-panel,#peers-panel{grid-column:1}.focus-panel .focus-btn{flex:auto}#ceremony-content{grid-template-columns:1fr 1fr}#ceremony-content .birth-certificate{grid-column:1;grid-row:1}#ceremony-content>.section-family{grid-column:2;grid-row:1}#ceremony-content>.section-culture{grid-column:1;grid-row:2}#ceremony-content>.section-countryStats{grid-column:2;grid-row:2}#screen-landing .hero{grid-template-columns:1fr 1fr;gap:12px 22px;padding:22px}.settings{flex-wrap:wrap}}
+@media(max-width:720px){#app{padding:12px}.game-layout{grid-template-columns:1fr}.game-layout>aside{display:grid;grid-template-columns:1fr 1fr;gap:0 18px}#player-name{grid-column:1 / -1}#player-info{grid-column:2;grid-row:2}.game-layout aside hr{display:none}.player-info .edition-field{grid-template-columns:60px 1fr}.game-layout>main{grid-template-columns:1fr}#scene-canvas{max-height:160px}#screen-landing .hero{display:flex;flex-direction:column;align-items:stretch;padding:20px;gap:14px}#screen-landing .hero>h1{align-self:auto;font-size:2.2rem}#world-map{order:0;aspect-ratio:1.9}.year-selector{padding-top:14px}.settings{justify-content:flex-start}#screen-landing .hero>.toolbar:not(.settings){justify-content:flex-start}#ceremony-content{grid-template-columns:1fr}#ceremony-content>.panel,#ceremony-content .birth-certificate{grid-column:1;grid-row:auto}#ceremony-content>.section-peers .feature-list{grid-template-columns:1fr}.birth-certificate>h3{margin-bottom:14px}.birth-actions{flex-wrap:wrap}#screen-ending #death-record{grid-template-columns:1fr}.edition-modal .panel{padding:18px}}
+@media(max-width:420px){.game-layout>aside{grid-template-columns:1fr}#player-info{grid-column:1;grid-row:auto;margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}#game-controls{grid-template-columns:1fr}#btn-next-year{grid-column:1}#game-controls>.toolbar .focus-btn{flex:1}.hero>h1{font-size:2rem}.birth-actions .btn{flex:1}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}

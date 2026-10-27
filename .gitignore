@@ -16,3 +16,13 @@ data/raw/
 # 操作系统
 .DS_Store
 Thumbs.db
+node_modules/
+.npm/
+.reference/
+.pilotdeck/
+docs_raw_*.txt
+*.log
+/data/raw/
+.DS_Store
+Thumbs.db
+*\`

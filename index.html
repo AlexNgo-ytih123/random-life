@@ -3,11 +3,177 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Random Life</title>
+  <title>Random Life - 随机人生模拟器</title>
   <link rel="stylesheet" href="./css/base.css">
+  <style>
+    :root {
+      --bg: #fdfdfd; --text: #333; --accent: #1f8a80; --card: #fff;
+    }
+    [data-theme="dark"] {
+      --bg: #1a1a1a; --text: #eee; --accent: #4db6ac; --card: #2d2d2d;
+    }
+    body {
+      margin: 0; background: var(--bg); color: var(--text);
+      font-family: system-ui, -apple-system, sans-serif;
+      display: flex; justify-content: center; align-items: center;
+      min-height: 100vh; overflow-x: hidden;
+    }
+    #app { width: 100%; max-width: 1000px; padding: 20px; position: relative; }
+    
+    .screen { display: none; animation: fadeIn 0.5s ease; }
+    .screen.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes slideDown { from { top: -50px; } to { top: 20px; } }
+    @keyframes fadeOut { 0% { opacity: 1; } 80% { opacity: 1; } 100% { opacity: 0; } }
+    
+    .hero { text-align: center; }
+    .hero h1 { font-size: 3rem; margin-bottom: 0.5rem; }
+    .counter { font-family: monospace; font-size: 1.2rem; margin: 1rem 0; color: #666; }
+    
+    #world-map { 
+      background: #e0f0ff; border-radius: 12px; 
+      width: 100%; max-width: 800px; height: 300px; 
+      margin: 2rem auto; display: block;
+    }
+    
+    .btn { 
+      padding: 12px 24px; font-size: 1.1rem; cursor: pointer; 
+      border: none; border-radius: 8px; background: var(--accent); color: #fff;
+      transition: transform 0.1s;
+    }
+    .btn:active { transform: scale(0.95); }
+    
+    /* 年份选择器样式 */
+    .year-selector {
+      margin: 20px auto; text-align: center; max-width: 400px;
+    }
+    .year-selector input {
+      width: 100%; cursor: pointer; accent-color: var(--accent);
+    }
+    .year-label { font-size: 1.2rem; font-weight: bold; margin-bottom: 10px; display: block; }
+    
+    .game-layout { display: grid; grid-template-columns: 300px 1fr; gap: 20px; }
+    .panel { background: var(--card); padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    
+    #scene-canvas { 
+      width: 100%; aspect-ratio: 192/60; background: #000; 
+      border-radius: 8px; image-rendering: pixelated; 
+    }
+    .stat-bar { margin: 10px 0; }
+    .bar-outer { height: 8px; background: #ddd; border-radius: 4px; overflow: hidden; }
+    .bar-inner { height: 100%; background: var(--accent); transition: width 0.3s; }
+    
+    .focus-panel { 
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; 
+      margin: 20px 0; 
+    }
+    .focus-btn {
+      padding: 10px; cursor: pointer; border: 1px solid #ccc; 
+      border-radius: 8px; background: var(--card); color: var(--text);
+      text-align: center; font-size: 0.9rem; transition: all 0.2s;
+    }
+    .focus-btn.active { 
+      border-color: var(--accent); background: rgba(31, 138, 128, 0.1); 
+      box-shadow: 0 0 0 2px var(--accent); font-weight: bold;
+    }
+    .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+    .opt-btn { 
+      padding: 10px; text-align: left; cursor: pointer; 
+      border: 1px solid #ccc; border-radius: 6px; background: transparent; color: var(--text);
+    }
+    .opt-btn:hover { background: rgba(0,0,0,0.05); }
+  </style>
+  <link rel="stylesheet" href="./css/edition.css">
 </head>
 <body>
-  <main id="app"><h1>Random Life</h1><p id="boot">正在加载…</p></main>
+  <div id="app">
+    <div id="event-layer"></div>
+    
+    <section id="screen-landing" class="screen active">
+      <div class="hero">
+        <h1>Random Life</h1>
+        <p>你将随机出生在地球上的某个地方，活完真实的一生。</p>
+        <div class="counter" id="birth-counter">全球已有 0 人在此出生</div>
+        
+        <!-- 年份选择器 (M5) -->
+        <div class="year-selector">
+          <label class="year-label">选择出生年份: <span id="year-val">2026</span></label>
+          <input type="range" id="year-slider" min="1950" max="2026" value="2026">
+        </div>
+        <div class="toolbar settings">
+          <label><span id="label-language">语言</span> <select id="language-select" aria-label="Language"><option value="zh">简体中文</option><option value="en">English</option><option value="ja">日本語</option></select></label>
+          <label><span id="label-seed">种子</span> <input id="seed-input" type="number" step="1" placeholder="随机"></label>
+          <button class="focus-btn" id="btn-random-era">随机年份</button>
+        </div>
+
+        <canvas id="world-map"></canvas>
+        <br>
+        <button class="btn" id="btn-start">开始人生</button>
+        <div class="toolbar">
+          <button class="focus-btn" id="btn-resume" disabled>继续存档</button>
+          <button class="focus-btn" id="btn-past">前世档案</button>
+          <button class="focus-btn" id="btn-achievements">成就</button>
+        </div>
+        <p id="load-status" role="status"></p>
+        <p id="source-note" class="source-note"></p>
+      </div>
+    </section>
+
+    <section id="screen-ceremony" class="screen">
+      <div class="hero">
+        <h2>出生登记中...</h2>
+        <div id="ceremony-content"></div>
+        <div class="birth-actions"><button class="btn" id="btn-begin">开启生活</button>
+        <button class="focus-btn" id="btn-reroll">重新出生</button>
+        <button class="focus-btn" id="btn-birth-back">返回</button></div>
+      </div>
+    </section>
+
+    <section id="screen-game" class="screen">
+      <div class="game-layout">
+        <aside class="panel">
+          <h3 id="player-name">姓名</h3>
+          <div id="stats-panel"></div>
+          <hr>
+          <div id="player-info"></div>
+        </aside>
+        <main>
+          <canvas id="scene-canvas"></canvas>
+          <div id="game-controls" style="text-align: center; margin-top: 10px;">
+            <div class="focus-panel" id="focus-selector"></div>
+            <button class="btn" id="btn-next-year" style="margin-top: 20px;">推进一年</button>
+            <div class="toolbar">
+              <button class="focus-btn" id="btn-next-decision">前往下个选择</button>
+              <button class="focus-btn" id="btn-auto">自动进行</button>
+              <button class="focus-btn" id="btn-shop">活动与商店</button>
+              <button class="focus-btn" id="btn-log">完整记录</button>
+              <button class="focus-btn" id="btn-game-achievements">成就</button>
+              <button class="focus-btn" id="btn-save-menu">保存并返回菜单</button>
+            </div>
+            <p id="save-status" role="status"></p>
+          </div>
+          <section class="panel edition-panel" id="story-panel" aria-live="polite"></section>
+          <section class="panel edition-panel" id="peers-panel"></section>
+        </main>
+      </div>
+    </section>
+
+    <section id="screen-ending" class="screen">
+      <div class="hero">
+        <h1>人生终结</h1>
+        <div id="death-record" class="panel" style="max-width: 600px; margin: 0 auto; text-align: left;"></div>
+        <br>
+        <button class="btn" id="btn-restart">再次轮回</button>
+        <button class="focus-btn" id="btn-ending-log">完整记录</button>
+        <button class="focus-btn" id="btn-copy-share">复制分享文案</button>
+      </div>
+    </section>
+    <section id="screen-library" class="screen">
+      <h2 id="library-title"></h2>
+      <div id="library-content" class="panel"></div>
+      <div class="toolbar"><button class="focus-btn" id="btn-library-back">返回</button><button class="focus-btn" id="btn-clear-history" hidden>清空历史</button></div>
+    </section>
+  </div>
   <script type="module" src="./js/main.js"></script>
 </body>
 </html>

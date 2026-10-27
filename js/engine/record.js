@@ -35,8 +35,9 @@ export function buildDeathRecord(state, opts) {
     birthPlace: countryName(state),
     iso3: countryIso(state),
     birthDate: (state.birthYear || 2026) + '-1-1',
-    deathDate: ((state.birthYear || 2026) + (state.age != null ? state.age : (state.deathAge != null ? state.deathAge : 0)) + '-12-31',
+    deathDate: ((state.birthYear || 2026) + (state.deathAge ?? state.age ?? 0)) + '-12-31',
     age: state.deathAge != null ? state.deathAge : (state.age != null ? state.age : 0),
+    globalIndex: state.globalIndex ?? state.country?.globalIndex ?? null,
     cause: null,
     causeShare: null,
     stats: Object.assign({}, state.stats || {}),
@@ -57,10 +58,9 @@ export function buildDeathRecord(state, opts) {
   }
 
   const mix = opts.causeMix || null;
-  const band = (state.age != null) ? bandOfMortality(state.age) : 6;
+  const band = bandOfMortality(migration.age);
 
-  const causeMeta = { year: migration.dataYears.lifeExp || null,
-    source: (state.country && state.country.indicators && state.country.indicators.lifeExp && state.country.indicators.lifeExp.source) || 'World Bank cause of death approximation' };
+  const causeMeta = opts.causeMeta || {};
 
   if (mix) {
     const res = sampleCause(rng || (() => 0.5), mix, band, causeMeta);
@@ -74,7 +74,7 @@ export function buildDeathRecord(state, opts) {
     }
   } else {
     // best effort: 借用 record 里 epidemiologicalagnostic 默认
-    migration.cause = '自然老去';
+    migration.cause = '未知';
     migration.causeShare = null;
   }
 
@@ -92,8 +92,8 @@ function bandOfFallback(age) {
   return 6;
 }
 
-export function buildShareText(state) {
-  const rec = buildDeathRecord(state);
+export function buildShareText(state, opts = {}) {
+  const rec = opts.record || buildDeathRecord(state, opts);
   const lines = [];
   lines.push(`我在 ${rec.birthPlace} 活了 ${rec.age} 年。`);
   lines.push(`死因：${rec.cause}${rec.causeShare ? '（' + rec.causeShare.toFixed(1) + '%）' : ''}。`);

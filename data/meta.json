@@ -1,5 +1,5 @@
 {
-  "generated": "2026-10-22",
+  "generated": "2026-10-23",
   "countryCount": 215,
   "births": {
     "actualThroughYear": 2023,
@@ -12,7 +12,7 @@
       "source": "Our World in Data",
       "url": "https://ourworldindata.org/grapher/population.csv",
       "license": "CC BY 4.0",
-      "retrieved": "2026-10-22T22:08:08.222Z",
+      "retrieved": "2026-10-23T04:04:53.568Z",
       "unit": "人",
       "note": "联合国世界人口展望（UN WPP）总人口；原始数据含负年份的历史重建值，构建时已剔除"
     },
@@ -21,7 +21,7 @@
       "source": "Our World in Data",
       "url": "https://ourworldindata.org/grapher/life-expectancy.csv",
       "license": "CC BY 4.0",
-      "retrieved": "2026-10-22T22:08:07.504Z",
+      "retrieved": "2026-10-23T04:04:51.960Z",
       "unit": "岁",
       "note": "联合国世界人口展望（UN WPP）出生时预期寿命；原始数据含 1950 年前的历史重建值"
     },
@@ -30,7 +30,7 @@
       "source": "Our World in Data",
       "url": "https://ourworldindata.org/grapher/number-of-births.csv",
       "license": "CC BY 4.0",
-      "retrieved": "2026-10-22T22:08:06.958Z",
+      "retrieved": "2026-10-23T04:04:51.016Z",
       "unit": "人/年",
       "note": "联合国世界人口展望（UN WPP）出生人口；2023 年及以前为估计值，2024 年起为投影值"
     },
@@ -39,7 +39,7 @@
       "source": "Our World in Data",
       "url": "https://ourworldindata.org/grapher/total-fertility-rate.csv",
       "license": "CC BY 4.0",
-      "retrieved": "2026-10-22T22:08:08.904Z",
+      "retrieved": "2026-10-23T04:04:54.233Z",
       "unit": "每名女性生育数",
       "note": "联合国世界人口展望（UN WPP）总和生育率"
     },
@@ -48,7 +48,7 @@
       "source": "Our World in Data",
       "url": "https://ourworldindata.org/grapher/child-mortality-igme.csv",
       "license": "CC BY 4.0",
-      "retrieved": "2026-10-22T22:08:09.284Z",
+      "retrieved": "2026-10-23T04:04:54.723Z",
       "unit": "‰（每千名活产儿）",
       "note": "联合国儿童死亡率估算（UN IGME）5 岁以下儿童死亡率"
     },
@@ -57,7 +57,7 @@
       "source": "Our World in Data",
       "url": "https://ourworldindata.org/grapher/mean-years-of-schooling.csv",
       "license": "CC BY 4.0",
-      "retrieved": "2026-10-22T22:08:09.986Z",
+      "retrieved": "2026-10-23T04:04:55.590Z",
       "unit": "年（平均受教育年限）",
       "note": "Barro-Lee 口径的 15 岁以上人口平均受教育年限（经 OWID 整理）"
     },
@@ -66,7 +66,7 @@
       "source": "Our World in Data",
       "url": "https://ourworldindata.org/grapher/employment-in-agriculture.csv",
       "license": "CC BY 4.0",
-      "retrieved": "2026-10-22T22:08:10.524Z",
+      "retrieved": "2026-10-23T04:04:56.447Z",
       "unit": "%（就业人口中农业占比）",
       "note": "就业于农业的人口占比（ILO 口径，经 OWID 整理）"
     },
@@ -75,7 +75,7 @@
       "source": "Our World in Data",
       "url": "https://ourworldindata.org/grapher/homicide-rate-unodc.csv",
       "license": "CC BY 4.0",
-      "retrieved": "2026-10-22T22:08:10.773Z",
+      "retrieved": "2026-10-23T04:04:56.806Z",
       "unit": "每 10 万人",
       "note": "联合国毒品和犯罪问题办公室（UNODC）故意杀人率（每 10 万人）"
     },
@@ -84,7 +84,7 @@
       "source": "Our World in Data",
       "url": "https://ourworldindata.org/grapher/maternal-mortality.csv",
       "license": "CC BY 4.0",
-      "retrieved": "2026-10-22T22:08:11.139Z",
+      "retrieved": "2026-10-23T04:04:57.232Z",
       "unit": "每 10 万活产儿",
       "note": "联合国孕产妇死亡比估算（每 10 万活产儿）"
     },
@@ -93,7 +93,7 @@
       "source": "Our World in Data",
       "url": "https://ourworldindata.org/grapher/share-of-adults-who-smoke.csv",
       "license": "CC BY 4.0",
-      "retrieved": "2026-10-22T22:08:45.974Z",
+      "retrieved": "2026-10-23T04:04:57.508Z",
       "unit": "%（成年人吸烟率，年龄标准化）",
       "note": "成年人吸烟或使用烟草人口占比（年龄标准化）"
     },
@@ -102,7 +102,7 @@
       "source": "World Bank Open Data",
       "url": "https://api.worldbank.org/v2/country/all/indicator/SP.DYN.LE00.IN?format=json&per_page=20000&date=1990:2023",
       "license": "CC BY 4.0",
-      "retrieved": "2026-10-22T22:08:10.746Z",
+      "retrieved": "2026-10-23T04:05:03.346Z",
       "unit": "岁",
       "note": "出生时预期寿命（总人口）"
     },
@@ -111,7 +111,7 @@
       "source": "World Bank Open Data",
       "url": "https://api.worldbank.org/v2/country/all/indicator/SP.DYN.LE00.FE.IN?format=json&per_page=20000&date=1990:2023",
       "license": "CC BY 4.0",
-      "retrieved": "2026-10-22T22:08:10.904Z",
+      "retrieved": "2026-10-23T04:05:03.503Z",
       "unit": "岁",
       "note": "出生时预期寿命（女性）"
     },
@@ -120,7 +120,7 @@
       "source": "World Bank Open Data",
       "url": "https://api.worldbank.org/v2/country/all/indicator/SP.DYN.LE00.MA.IN?format=json&per_page=20000&date=1990:2023",
       "license": "CC BY 4.0",
-      "retrieved": "2026-10-22T22:08:11.065Z",
+      "retrieved": "2026-10-23T04:05:03.652Z",
       "unit": "岁",
       "note": "出生时预期寿命（男性）"
     },
@@ -129,7 +129,7 @@
       "source": "World Bank Open Data",
       "url": "https://api.worldbank.org/v2/country/all/indicator/SP.DYN.IMRT.IN?format=json&per_page=20000&date=1990:2023",
       "license": "CC BY 4.0",
-      "retrieved": "2026-10-22T22:08:11.264Z",
+      "retrieved": "2026-10-23T04:05:03.798Z",
       "unit": "‰（每千名活产儿）",
       "note": "婴儿死亡率（1 岁以下，每千名活产儿）"
     },
@@ -138,7 +138,7 @@
       "source": "World Bank Open Data",
       "url": "https://api.worldbank.org/v2/country/all/indicator/SH.DYN.MORT?format=json&per_page=20000&date=1990:2023",
       "license": "CC BY 4.0",
-      "retrieved": "2026-10-22T22:08:11.447Z",
+      "retrieved": "2026-10-23T04:05:03.934Z",
       "unit": "‰（每千名活产儿）",
       "note": "5 岁以下儿童死亡率（每千名活产儿）"
     },
@@ -147,7 +147,7 @@
       "source": "World Bank Open Data",
       "url": "https://api.worldbank.org/v2/country/all/indicator/SH.DTH.COMM.ZS?format=json&per_page=20000&date=1990:2023",
       "license": "CC BY 4.0",
-      "retrieved": "2026-10-22T22:08:11.607Z",
+      "retrieved": "2026-10-23T04:05:04.074Z",
       "unit": "%（占死亡总数）",
       "note": "传染性疾病、孕产妇与营养条件导致的死亡占比"
     },
@@ -156,7 +156,7 @@
       "source": "World Bank Open Data",
       "url": "https://api.worldbank.org/v2/country/all/indicator/SH.DTH.NCOM.ZS?format=json&per_page=20000&date=1990:2023",
       "license": "CC BY 4.0",
-      "retrieved": "2026-10-22T22:08:11.754Z",
+      "retrieved": "2026-10-23T04:05:04.194Z",
       "unit": "%（占死亡总数）",
       "note": "非传染性疾病导致的死亡占比"
     },
@@ -165,7 +165,7 @@
       "source": "World Bank Open Data",
       "url": "https://api.worldbank.org/v2/country/all/indicator/SH.DTH.INJR.ZS?format=json&per_page=20000&date=1990:2023",
       "license": "CC BY 4.0",
-      "retrieved": "2026-10-22T22:08:11.899Z",
+      "retrieved": "2026-10-23T04:05:04.332Z",
       "unit": "%（占死亡总数）",
       "note": "伤害导致的死亡占比"
     },
@@ -174,7 +174,7 @@
       "source": "World Bank Open Data",
       "url": "https://api.worldbank.org/v2/country/all/indicator/NY.GDP.PCAP.PP.CD?format=json&per_page=20000&date=1990:2023",
       "license": "CC BY 4.0",
-      "retrieved": "2026-10-22T22:08:12.083Z",
+      "retrieved": "2026-10-23T04:05:04.481Z",
       "unit": "现价国际元（PPP）",
       "note": "人均 GDP（购买力平价，现价国际元）"
     },
@@ -183,7 +183,7 @@
       "source": "World Bank Open Data",
       "url": "https://api.worldbank.org/v2/country/all/indicator/SI.POV.GINI?format=json&per_page=20000&date=1990:2023",
       "license": "CC BY 4.0",
-      "retrieved": "2026-10-22T22:08:12.253Z",
+      "retrieved": "2026-10-23T04:05:04.615Z",
       "unit": "基尼指数（0-100）",
       "note": "居民收入基尼系数"
     },
@@ -192,7 +192,7 @@
       "source": "World Bank Open Data",
       "url": "https://api.worldbank.org/v2/country/all/indicator/SP.URB.TOTL.IN.ZS?format=json&per_page=20000&date=1990:2023",
       "license": "CC BY 4.0",
-      "retrieved": "2026-10-22T22:08:12.427Z",
+      "retrieved": "2026-10-23T04:05:04.768Z",
       "unit": "%（城市人口占比）",
       "note": "城市人口占总人口比重"
     },
@@ -201,7 +201,7 @@
       "source": "World Bank Open Data",
       "url": "https://api.worldbank.org/v2/country/all/indicator/SP.POP.BRTH.MF?format=json&per_page=20000&date=1990:2023",
       "license": "CC BY 4.0",
-      "retrieved": "2026-10-22T22:08:12.656Z",
+      "retrieved": "2026-10-23T04:05:04.971Z",
       "unit": "每 100 名女婴对应的男婴数",
       "note": "出生人口性别比"
     },
@@ -210,7 +210,7 @@
       "source": "World Bank Open Data",
       "url": "https://api.worldbank.org/v2/country/all/indicator/SL.UEM.TOTL.ZS?format=json&per_page=20000&date=1990:2023",
       "license": "CC BY 4.0",
-      "retrieved": "2026-10-22T22:08:12.815Z",
+      "retrieved": "2026-10-23T04:05:05.089Z",
       "unit": "%（失业率）",
       "note": "失业率（占总劳动力比重，ILO 估算）"
     },
@@ -219,7 +219,7 @@
       "source": "World Bank Open Data",
       "url": "https://api.worldbank.org/v2/country/all/indicator/SH.XPD.OOPC.CH.ZS?format=json&per_page=20000&date=1990:2023",
       "license": "CC BY 4.0",
-      "retrieved": "2026-10-22T22:08:13.021Z",
+      "retrieved": "2026-10-23T04:05:05.239Z",
       "unit": "%（占卫生总支出）",
       "note": "自付医疗支出占卫生总支出的比例"
     },
@@ -228,7 +228,7 @@
       "source": "World Bank Open Data",
       "url": "https://api.worldbank.org/v2/country/all/indicator/SH.MED.PHYS.ZS?format=json&per_page=20000&date=1990:2023",
       "license": "CC BY 4.0",
-      "retrieved": "2026-10-22T22:08:13.159Z",
+      "retrieved": "2026-10-23T04:05:05.346Z",
       "unit": "每千人医生数",
       "note": "每 1,000 人拥有的执业医师数"
     },
@@ -237,7 +237,7 @@
       "source": "World Bank Open Data",
       "url": "https://api.worldbank.org/v2/country/all/indicator/SH.STA.MMRT?format=json&per_page=20000&date=1990:2023",
       "license": "CC BY 4.0",
-      "retrieved": "2026-10-22T22:08:13.303Z",
+      "retrieved": "2026-10-23T04:05:05.481Z",
       "unit": "每 10 万活产儿",
       "note": "孕产妇死亡比（模型估算，每 10 万活产儿）"
     },
@@ -246,7 +246,7 @@
       "source": "World Bank Open Data",
       "url": "https://api.worldbank.org/v2/country/all/indicator/SH.IMM.MEAS?format=json&per_page=20000&date=1990:2023",
       "license": "CC BY 4.0",
-      "retrieved": "2026-10-22T22:08:13.494Z",
+      "retrieved": "2026-10-23T04:05:05.584Z",
       "unit": "%（12-23 月龄儿童）",
       "note": "12-23 月龄儿童麻疹疫苗接种率"
     },
@@ -255,7 +255,7 @@
       "source": "World Bank Open Data",
       "url": "https://api.worldbank.org/v2/country/all/indicator/SI.POV.DDAY?format=json&per_page=20000&date=1990:2023",
       "license": "CC BY 4.0",
-      "retrieved": "2026-10-22T22:08:13.633Z",
+      "retrieved": "2026-10-23T04:05:05.696Z",
       "unit": "%（人口占比）",
       "note": "日均消费低于 3 美元（2021 PPP）的人口占比"
     },
@@ -264,7 +264,7 @@
       "source": "World Bank Open Data",
       "url": "https://api.worldbank.org/v2/country/all/indicator/VC.IHR.PSRC.P5?format=json&per_page=20000&date=1990:2023",
       "license": "CC BY 4.0",
-      "retrieved": "2026-10-22T22:08:13.809Z",
+      "retrieved": "2026-10-23T04:05:05.804Z",
       "unit": "每 10 万人",
       "note": "故意杀人率（每 10 万人）"
     },
@@ -273,7 +273,7 @@
       "source": "World Bank Open Data",
       "url": "https://api.worldbank.org/v2/country/all/indicator/SE.TER.ENRR?format=json&per_page=20000&date=1990:2023",
       "license": "CC BY 4.0",
-      "retrieved": "2026-10-22T22:08:13.980Z",
+      "retrieved": "2026-10-23T04:05:05.925Z",
       "unit": "%（毛入学率）",
       "note": "高等教育毛入学率"
     }

@@ -3,7 +3,7 @@ import { FOCUSES, applyFocus } from './focus.js';
 import { availableDecisions, resolveDecision } from './decisions.js';
 import { rollEvent } from './events.js';
 import { advanceEducation, advanceCareer, advanceFamily, advanceHealth } from './stages.js';
-import { buildMortality, sampleDeathAge } from './mortality.js';
+import { buildMortality } from './mortality.js';
 
 /**
  * js/engine/orchestrator.js
@@ -94,8 +94,9 @@ export function simulateYear(state, age, options, rng) {
   }
 
   // 5. 死亡检查
-  const death = sampleDeathAge(rng, m);
-  if (age >= death.age) {
+  // 已经活到 age：只抽本年龄区间的条件死亡概率，不能每年重抽整条寿命。
+  const diesThisYear = rng() < -Math.expm1(-m.mu(age));
+  if (diesThisYear || age >= 119) {
     const deadState = Object.assign({}, state, { age, status: 'dead', deathAge: age });
     state.status = 'dead';
     state.deathAge = age;

@@ -296,7 +296,8 @@ export function drawBirthplace(rng, weights, ctx = {}) {
   }
   if (valid && total <= 0) return null;
 
-  const index = weighted(rng, weights);
+  const draw = rng();
+  const index = weighted(() => draw, weights);
   const entry = weights[index];
 
   // 统计上下文：ctx 里没有这个国家就留空，不要崩。
@@ -307,6 +308,8 @@ export function drawBirthplace(rng, weights, ctx = {}) {
   return {
     ...entry,
     ...fields,
+    globalIndex: Math.floor(draw * total),
+    totalWorldBirths: total,
     // chance = 该国占全球出生人口的比例，UI 用它说
     // 「你占这个世界出生人口的 12.4%」。
     chance: total > 0 ? entry.w / total : 0,
